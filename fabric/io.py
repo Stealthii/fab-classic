@@ -2,7 +2,7 @@ import re
 import sys
 import socket
 import time
-from select import select
+from select import poll
 from collections import deque
 
 import six
@@ -268,8 +268,9 @@ def input_loop(chan, f, using_pty):
             if msvcrt.kbhit():
                 byte = msvcrt.getch()
         elif waitable:
-            r, w, x = select([f], [], [], 0.0)
-            if f in r:
+            poller = poll()
+            poller.register(f, 1)
+            if poller.poll(f.fileno()):
                 byte = f.read(1)
         else:
             byte = f.read(1)
